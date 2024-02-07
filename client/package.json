@@ -1,0 +1,37 @@
+{
+  "name": "policy-reasoner-client",
+  "version": "1.0.0",
+  "description": "",
+  "source": "src/index.html",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx parcel",
+    "build": "npx parcel build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@codemirror/lang-javascript": "^6.2.1",
+    "@emotion/react": "^11.11.3",
+    "@emotion/styled": "^11.11.0",
+    "@mui/material": "^5.15.5",
+    "@parcel/config-default": "^2.11.0",
+    "@tanstack/react-query": "^5.17.19",
+    "@types/react": "^18.2.48",
+    "@types/react-dom": "^18.2.18",
+    "@uiw/react-codemirror": "^4.21.21",
+    "axios": "^1.6.5",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.21.2"
+  },
+  "devDependencies": {
+    "@parcel/transformer-sass": "^2.11.0",
+    "@parcel/transformer-typescript-tsc": "^2.11.0",
+    "buffer": "^6.0.3",
+    "process": "^0.11.10",
+    "typescript": "^5.3.3"
+  }
+}
