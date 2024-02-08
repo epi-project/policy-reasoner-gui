@@ -1,5 +1,7 @@
 import hello_world;
 
+#![on("foo")]
+
 func once() {
     return hello_world();
 }

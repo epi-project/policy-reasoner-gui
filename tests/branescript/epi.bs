@@ -4,7 +4,9 @@
 import epi;
 
 // Do local computation on both the St. Antonius and UMC Utrecht
+#[on("st_antonius")]
 let res_sta := local_compute(new Data{ name := "st_antonius_ect" });
+#[on("umc_utrecht")]
 let res_umc := local_compute(new Data{ name := "umc_utrecht_ect" });
 
 // Do the aggregation step

@@ -4,6 +4,7 @@
 import epi;
 
 // Do local computation on both the UMC Utrecht only
+#[on("umc_utrecht")]
 let res_umc := local_compute(new Data{ name := "umc_utrecht_ect" });
 
 // Do the aggregation step with that same dataset twice lol

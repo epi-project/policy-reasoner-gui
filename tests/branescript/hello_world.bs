@@ -1,4 +1,5 @@
 // Test scripts that runs the hello_world package.
 import hello_world;
 
+#[on("foo")]
 println(hello_world());

@@ -9,8 +9,10 @@ import epi;   // local_compute(), aggregate()
 
 // We do a local compute on two domains first
 let local_results := parallel [all] [{
+    #[on("st_antonius")]
     return local_compute(new Data { name := "st_antonius_ect" });
 }, {
+    #[on("umc_utrecht")]
     return local_compute(new Data { name := "umc_utrecht_ect" });
 }];
 

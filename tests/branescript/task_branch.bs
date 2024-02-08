@@ -1,6 +1,8 @@
 import copy_result;     // copy_result()
 import data_init;       // zeroes()
 
+#![on("foo")]
+
 // Initialize some thing
 let start := zeroes(16, "vector");
 

@@ -12,9 +12,11 @@ import epi;   // local_compute(), aggregate()
 // We do a local compute on two domains first
 let local_results := parallel [all] [{
     #[tag("amy.Epi")]
+    #[on("st_antonius")]
     return local_compute(new Data { name := "st_antonius_ect" });
 }, {
     #[tag("amy.Epi")]
+    #[on("umc_utrecht")]
     return local_compute(new Data { name := "umc_utrecht_ect" });
 }];
 

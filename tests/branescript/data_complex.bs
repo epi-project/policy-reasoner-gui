@@ -4,6 +4,8 @@ import data_test;
 
 
 
+#![on("foo")]
+
 // Run something straightforward
 let data0 := new Data { name := "Test" };
 let res1 := run_script(data0);

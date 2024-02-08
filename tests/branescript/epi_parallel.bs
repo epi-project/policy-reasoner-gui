@@ -5,8 +5,10 @@ import epi;
 
 // Do local computation on both the St. Antonius and UMC Utrecht
 let res := parallel [all] [{
+    #[on("st_antonius")]
     return local_compute(new Data{ name := "st_antonius_ect" });
 }, {
+    #[on("umc_utrecht")]
     return local_compute(new Data{ name := "umc_utrecht_ect" });
 }];
 

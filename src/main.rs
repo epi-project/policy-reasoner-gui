@@ -1,25 +1,28 @@
-use axum::{
-    http::{header::CONTENT_TYPE, HeaderValue, Method},
-    routing::{delete, get, post},
-    Router,
+use axum::http::header::CONTENT_TYPE;
+use axum::http::{HeaderValue, Method};
+use axum::routing::{delete, get, post};
+use axum::Router;
+use humanlog::{DebugMode, HumanLogger};
+use policy_reasoner_client_backend::auth::{getKey, get_authenticate, logout, post_authenticate, AppState};
+use policy_reasoner_client_backend::conv::post_conv;
+use policy_reasoner_client_backend::deliberation::{post_access_data, post_exec_task, post_validate_workflow};
+use policy_reasoner_client_backend::policy::{
+    delete_deactivate_policy, get_active_policy, get_policies, get_policy, post_activate_policy, post_add_policy,
 };
-
-use policy_reasoner_client_backend::{
-    auth::{getKey, get_authenticate, logout, post_authenticate, AppState},
-    conv::post_conv,
-    deliberation::{post_access_data, post_exec_task, post_validate_workflow},
-    policy::{
-        delete_deactivate_policy, get_active_policy, get_policies, get_policy,
-        post_activate_policy, post_add_policy,
-    },
-    reasoner_conn::get_reasoner_connector_info,
-};
+use policy_reasoner_client_backend::reasoner_conn::get_reasoner_connector_info;
 use tower_http::cors::CorsLayer;
 
 #[tokio::main]
 async fn main() {
-    // initialize tracing
-    tracing_subscriber::fmt::init();
+    // Initialize logging
+    if std::env::var("HUMANLOGGER").is_ok() {
+        if let Err(err) = HumanLogger::terminal(DebugMode::Debug).init() {
+            eprintln!("WARNING: Failed to setup logger: {err} (no logging enabled for this session)");
+        }
+    } else {
+        // initialize tracing
+        tracing_subscriber::fmt::init();
+    }
 
     // inir CORS
     let cors = CorsLayer::new()
