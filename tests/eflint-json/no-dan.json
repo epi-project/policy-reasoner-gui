@@ -1,0 +1,42 @@
+{
+  "version": "0.1.0",
+  "kind": "phrases",
+  "phrases": [
+    {
+      "kind": "predicate",
+      "is-invariant": true,
+      "name": "no-node-at-dan",
+      "expression": {
+        "iterator": "FORALL",
+        "binds": [
+          "node"
+        ],
+        "expression": {
+          "operator": "NOT",
+          "operands": [
+            {
+              "identifier": "node-at",
+              "operands": [
+                [
+                  "node"
+                ],
+                {
+                  "identifier": "domain",
+                  "operands": [
+                    {
+                      "identifier": "user",
+                      "operands": [
+                        "Dan"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "updates": true
+}

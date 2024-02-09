@@ -1,0 +1,1297 @@
+{
+  "kind": "phrases",
+  "version": "0.1.0",
+  "phrases": [
+    {
+      "kind": "afact",
+      "name": "user",
+      "type": "String"
+    },
+    {
+      "kind": "cfact",
+      "name": "domain",
+      "identified-by": [
+        "user"
+      ]
+    },
+    {
+      "kind": "afact",
+      "name": "asset",
+      "type": "String"
+    },
+    {
+      "kind": "cfact",
+      "name": "asset-access",
+      "identified-by": [
+        "asset",
+        "user"
+      ]
+    },
+    {
+      "kind": "cfact",
+      "name": "code",
+      "identified-by": [
+        "asset"
+      ]
+    },
+    {
+      "kind": "afact",
+      "name": "workflow",
+      "type": "String"
+    },
+    {
+      "kind": "cfact",
+      "name": "workflow-result",
+      "identified-by": [
+        "workflow",
+        "asset"
+      ]
+    },
+    {
+      "kind": "cfact",
+      "name": "workflow-result-recipient",
+      "identified-by": [
+        "workflow-result",
+        "user"
+      ]
+    },
+    {
+      "kind": "cfact",
+      "name": "node",
+      "identified-by": [
+        "workflow",
+        "string"
+      ]
+    },
+    {
+      "kind": "cfact",
+      "name": "node-input",
+      "identified-by": [
+        "node",
+        "asset"
+      ]
+    },
+    {
+      "kind": "cfact",
+      "name": "node-input-from",
+      "identified-by": [
+        "node-input",
+        "domain"
+      ]
+    },
+    {
+      "kind": "cfact",
+      "name": "node-output",
+      "identified-by": [
+        "node",
+        "asset"
+      ]
+    },
+    {
+      "kind": "cfact",
+      "name": "node-at",
+      "identified-by": [
+        "node",
+        "domain"
+      ]
+    },
+    {
+      "kind": "cfact",
+      "name": "task",
+      "identified-by": [
+        "node"
+      ]
+    },
+    {
+      "kind": "cfact",
+      "name": "function",
+      "identified-by": [
+        "node-input",
+        "string"
+      ]
+    },
+    {
+      "kind": "cfact",
+      "name": "commit",
+      "identified-by": [
+        "node"
+      ]
+    },
+    {
+      "kind": "cfact",
+      "name": "loop",
+      "identified-by": [
+        "node"
+      ]
+    },
+    {
+      "kind": "cfact",
+      "name": "loop-body",
+      "identified-by": [
+        "loop",
+        "node"
+      ]
+    },
+    {
+      "kind": "cfact",
+      "name": "signature",
+      "identified-by": [
+        "user",
+        "string"
+      ]
+    },
+    {
+      "kind": "cfact",
+      "name": "signature-valid",
+      "identified-by": [
+        "signature"
+      ]
+    },
+    {
+      "kind": "cfact",
+      "name": "tag",
+      "identified-by": [
+        "user",
+        "string"
+      ]
+    },
+    {
+      "kind": "cfact",
+      "name": "metadata",
+      "identified-by": [
+        "tag",
+        "signature"
+      ]
+    },
+    {
+      "kind": "cfact",
+      "name": "workflow-metadata",
+      "identified-by": [
+        "workflow",
+        "metadata"
+      ]
+    },
+    {
+      "kind": "cfact",
+      "name": "node-metadata",
+      "identified-by": [
+        "node",
+        "metadata"
+      ]
+    },
+    {
+      "kind": "cfact",
+      "name": "asset-metadata",
+      "identified-by": [
+        "asset",
+        "metadata"
+      ]
+    },
+    {
+      "kind": "cfact",
+      "name": "user-metadata",
+      "identified-by": [
+        "user",
+        "metadata"
+      ]
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "user",
+        "operands": [
+          "test"
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "domain",
+        "operands": [
+          {
+            "identifier": "user",
+            "operands": [
+              "test"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "asset",
+        "operands": [
+          "st_antonius_ect"
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "asset",
+        "operands": [
+          "test_result"
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "asset",
+        "operands": [
+          "umc_utrecht_ect"
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "asset",
+        "operands": [
+          "foo"
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "asset",
+        "operands": [
+          "epi"
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "code",
+        "operands": [
+          {
+            "identifier": "asset",
+            "operands": [
+              "epi"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "asset",
+        "operands": [
+          "hello_world"
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "code",
+        "operands": [
+          {
+            "identifier": "asset",
+            "operands": [
+              "hello_world"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "workflow-to-execute",
+        "operands": [
+          {
+            "identifier": "workflow",
+            "operands": [
+              "workflow-IxBoAi1e"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "workflow",
+        "operands": [
+          "workflow-IxBoAi1e"
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "node",
+        "operands": [
+          {
+            "identifier": "workflow",
+            "operands": [
+              "workflow-IxBoAi1e"
+            ]
+          },
+          "workflow-IxBoAi1e-<main>:1-task"
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "task",
+        "operands": [
+          {
+            "identifier": "node",
+            "operands": [
+              {
+                "identifier": "workflow",
+                "operands": [
+                  "workflow-IxBoAi1e"
+                ]
+              },
+              "workflow-IxBoAi1e-<main>:1-task"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "node-input",
+        "operands": [
+          {
+            "identifier": "node",
+            "operands": [
+              {
+                "identifier": "workflow",
+                "operands": [
+                  "workflow-IxBoAi1e"
+                ]
+              },
+              "workflow-IxBoAi1e-<main>:1-task"
+            ]
+          },
+          {
+            "identifier": "asset",
+            "operands": [
+              "epi-1.0.0"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "function",
+        "operands": [
+          {
+            "identifier": "node-input",
+            "operands": [
+              {
+                "identifier": "node",
+                "operands": [
+                  {
+                    "identifier": "workflow",
+                    "operands": [
+                      "workflow-IxBoAi1e"
+                    ]
+                  },
+                  "workflow-IxBoAi1e-<main>:1-task"
+                ]
+              },
+              {
+                "identifier": "asset",
+                "operands": [
+                  "epi-1.0.0"
+                ]
+              }
+            ]
+          },
+          "local_compute"
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "node-input",
+        "operands": [
+          {
+            "identifier": "node",
+            "operands": [
+              {
+                "identifier": "workflow",
+                "operands": [
+                  "workflow-IxBoAi1e"
+                ]
+              },
+              "workflow-IxBoAi1e-<main>:1-task"
+            ]
+          },
+          {
+            "identifier": "asset",
+            "operands": [
+              "st_antonius_ect"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "node-input-from",
+        "operands": [
+          {
+            "identifier": "node-input",
+            "operands": [
+              {
+                "identifier": "node",
+                "operands": [
+                  {
+                    "identifier": "workflow",
+                    "operands": [
+                      "workflow-IxBoAi1e"
+                    ]
+                  },
+                  "workflow-IxBoAi1e-<main>:1-task"
+                ]
+              },
+              {
+                "identifier": "asset",
+                "operands": [
+                  "st_antonius_ect"
+                ]
+              }
+            ]
+          },
+          {
+            "identifier": "domain",
+            "operands": [
+              {
+                "identifier": "user",
+                "operands": [
+                  "test"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "node-output",
+        "operands": [
+          {
+            "identifier": "node",
+            "operands": [
+              {
+                "identifier": "workflow",
+                "operands": [
+                  "workflow-IxBoAi1e"
+                ]
+              },
+              "workflow-IxBoAi1e-<main>:1-task"
+            ]
+          },
+          {
+            "identifier": "asset",
+            "operands": [
+              "result_local_compute_516d2a"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "node-at",
+        "operands": [
+          {
+            "identifier": "node",
+            "operands": [
+              {
+                "identifier": "workflow",
+                "operands": [
+                  "workflow-IxBoAi1e"
+                ]
+              },
+              "workflow-IxBoAi1e-<main>:1-task"
+            ]
+          },
+          {
+            "identifier": "domain",
+            "operands": [
+              {
+                "identifier": "user",
+                "operands": [
+                  "test"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "node",
+        "operands": [
+          {
+            "identifier": "workflow",
+            "operands": [
+              "workflow-IxBoAi1e"
+            ]
+          },
+          "workflow-IxBoAi1e-<main>:3-task"
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "task",
+        "operands": [
+          {
+            "identifier": "node",
+            "operands": [
+              {
+                "identifier": "workflow",
+                "operands": [
+                  "workflow-IxBoAi1e"
+                ]
+              },
+              "workflow-IxBoAi1e-<main>:3-task"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "node-input",
+        "operands": [
+          {
+            "identifier": "node",
+            "operands": [
+              {
+                "identifier": "workflow",
+                "operands": [
+                  "workflow-IxBoAi1e"
+                ]
+              },
+              "workflow-IxBoAi1e-<main>:3-task"
+            ]
+          },
+          {
+            "identifier": "asset",
+            "operands": [
+              "epi-1.0.0"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "function",
+        "operands": [
+          {
+            "identifier": "node-input",
+            "operands": [
+              {
+                "identifier": "node",
+                "operands": [
+                  {
+                    "identifier": "workflow",
+                    "operands": [
+                      "workflow-IxBoAi1e"
+                    ]
+                  },
+                  "workflow-IxBoAi1e-<main>:3-task"
+                ]
+              },
+              {
+                "identifier": "asset",
+                "operands": [
+                  "epi-1.0.0"
+                ]
+              }
+            ]
+          },
+          "local_compute"
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "node-input",
+        "operands": [
+          {
+            "identifier": "node",
+            "operands": [
+              {
+                "identifier": "workflow",
+                "operands": [
+                  "workflow-IxBoAi1e"
+                ]
+              },
+              "workflow-IxBoAi1e-<main>:3-task"
+            ]
+          },
+          {
+            "identifier": "asset",
+            "operands": [
+              "umc_utrecht_ect"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "node-input-from",
+        "operands": [
+          {
+            "identifier": "node-input",
+            "operands": [
+              {
+                "identifier": "node",
+                "operands": [
+                  {
+                    "identifier": "workflow",
+                    "operands": [
+                      "workflow-IxBoAi1e"
+                    ]
+                  },
+                  "workflow-IxBoAi1e-<main>:3-task"
+                ]
+              },
+              {
+                "identifier": "asset",
+                "operands": [
+                  "umc_utrecht_ect"
+                ]
+              }
+            ]
+          },
+          {
+            "identifier": "domain",
+            "operands": [
+              {
+                "identifier": "user",
+                "operands": [
+                  "test"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "node-output",
+        "operands": [
+          {
+            "identifier": "node",
+            "operands": [
+              {
+                "identifier": "workflow",
+                "operands": [
+                  "workflow-IxBoAi1e"
+                ]
+              },
+              "workflow-IxBoAi1e-<main>:3-task"
+            ]
+          },
+          {
+            "identifier": "asset",
+            "operands": [
+              "result_local_compute_502854"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "node-at",
+        "operands": [
+          {
+            "identifier": "node",
+            "operands": [
+              {
+                "identifier": "workflow",
+                "operands": [
+                  "workflow-IxBoAi1e"
+                ]
+              },
+              "workflow-IxBoAi1e-<main>:3-task"
+            ]
+          },
+          {
+            "identifier": "domain",
+            "operands": [
+              {
+                "identifier": "user",
+                "operands": [
+                  "test"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "node",
+        "operands": [
+          {
+            "identifier": "workflow",
+            "operands": [
+              "workflow-IxBoAi1e"
+            ]
+          },
+          "workflow-IxBoAi1e-<main>:5-task"
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "task",
+        "operands": [
+          {
+            "identifier": "node",
+            "operands": [
+              {
+                "identifier": "workflow",
+                "operands": [
+                  "workflow-IxBoAi1e"
+                ]
+              },
+              "workflow-IxBoAi1e-<main>:5-task"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "node-input",
+        "operands": [
+          {
+            "identifier": "node",
+            "operands": [
+              {
+                "identifier": "workflow",
+                "operands": [
+                  "workflow-IxBoAi1e"
+                ]
+              },
+              "workflow-IxBoAi1e-<main>:5-task"
+            ]
+          },
+          {
+            "identifier": "asset",
+            "operands": [
+              "epi-1.0.0"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "function",
+        "operands": [
+          {
+            "identifier": "node-input",
+            "operands": [
+              {
+                "identifier": "node",
+                "operands": [
+                  {
+                    "identifier": "workflow",
+                    "operands": [
+                      "workflow-IxBoAi1e"
+                    ]
+                  },
+                  "workflow-IxBoAi1e-<main>:5-task"
+                ]
+              },
+              {
+                "identifier": "asset",
+                "operands": [
+                  "epi-1.0.0"
+                ]
+              }
+            ]
+          },
+          "aggregate"
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "node-input",
+        "operands": [
+          {
+            "identifier": "node",
+            "operands": [
+              {
+                "identifier": "workflow",
+                "operands": [
+                  "workflow-IxBoAi1e"
+                ]
+              },
+              "workflow-IxBoAi1e-<main>:5-task"
+            ]
+          },
+          {
+            "identifier": "asset",
+            "operands": [
+              "result_local_compute_516d2a"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "node-input-from",
+        "operands": [
+          {
+            "identifier": "node-input",
+            "operands": [
+              {
+                "identifier": "node",
+                "operands": [
+                  {
+                    "identifier": "workflow",
+                    "operands": [
+                      "workflow-IxBoAi1e"
+                    ]
+                  },
+                  "workflow-IxBoAi1e-<main>:5-task"
+                ]
+              },
+              {
+                "identifier": "asset",
+                "operands": [
+                  "result_local_compute_516d2a"
+                ]
+              }
+            ]
+          },
+          {
+            "identifier": "domain",
+            "operands": [
+              {
+                "identifier": "user",
+                "operands": [
+                  "test"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "node-input",
+        "operands": [
+          {
+            "identifier": "node",
+            "operands": [
+              {
+                "identifier": "workflow",
+                "operands": [
+                  "workflow-IxBoAi1e"
+                ]
+              },
+              "workflow-IxBoAi1e-<main>:5-task"
+            ]
+          },
+          {
+            "identifier": "asset",
+            "operands": [
+              "result_local_compute_502854"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "node-input-from",
+        "operands": [
+          {
+            "identifier": "node-input",
+            "operands": [
+              {
+                "identifier": "node",
+                "operands": [
+                  {
+                    "identifier": "workflow",
+                    "operands": [
+                      "workflow-IxBoAi1e"
+                    ]
+                  },
+                  "workflow-IxBoAi1e-<main>:5-task"
+                ]
+              },
+              {
+                "identifier": "asset",
+                "operands": [
+                  "result_local_compute_502854"
+                ]
+              }
+            ]
+          },
+          {
+            "identifier": "domain",
+            "operands": [
+              {
+                "identifier": "user",
+                "operands": [
+                  "test"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "node-output",
+        "operands": [
+          {
+            "identifier": "node",
+            "operands": [
+              {
+                "identifier": "workflow",
+                "operands": [
+                  "workflow-IxBoAi1e"
+                ]
+              },
+              "workflow-IxBoAi1e-<main>:5-task"
+            ]
+          },
+          {
+            "identifier": "asset",
+            "operands": [
+              "result_aggregate_1575d2"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "node-at",
+        "operands": [
+          {
+            "identifier": "node",
+            "operands": [
+              {
+                "identifier": "workflow",
+                "operands": [
+                  "workflow-IxBoAi1e"
+                ]
+              },
+              "workflow-IxBoAi1e-<main>:5-task"
+            ]
+          },
+          {
+            "identifier": "domain",
+            "operands": [
+              {
+                "identifier": "user",
+                "operands": [
+                  "test"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "node",
+        "operands": [
+          {
+            "identifier": "workflow",
+            "operands": [
+              "workflow-IxBoAi1e"
+            ]
+          },
+          "workflow-IxBoAi1e-<main>:7-commit"
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "commit",
+        "operands": [
+          {
+            "identifier": "node",
+            "operands": [
+              {
+                "identifier": "workflow",
+                "operands": [
+                  "workflow-IxBoAi1e"
+                ]
+              },
+              "workflow-IxBoAi1e-<main>:7-commit"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "node-input",
+        "operands": [
+          {
+            "identifier": "node",
+            "operands": [
+              {
+                "identifier": "workflow",
+                "operands": [
+                  "workflow-IxBoAi1e"
+                ]
+              },
+              "workflow-IxBoAi1e-<main>:7-commit"
+            ]
+          },
+          {
+            "identifier": "asset",
+            "operands": [
+              "result_aggregate_1575d2"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "node-input-from",
+        "operands": [
+          {
+            "identifier": "node-input",
+            "operands": [
+              {
+                "identifier": "node",
+                "operands": [
+                  {
+                    "identifier": "workflow",
+                    "operands": [
+                      "workflow-IxBoAi1e"
+                    ]
+                  },
+                  "workflow-IxBoAi1e-<main>:7-commit"
+                ]
+              },
+              {
+                "identifier": "asset",
+                "operands": [
+                  "result_aggregate_1575d2"
+                ]
+              }
+            ]
+          },
+          {
+            "identifier": "domain",
+            "operands": [
+              {
+                "identifier": "user",
+                "operands": [
+                  "test"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "node-output",
+        "operands": [
+          {
+            "identifier": "node",
+            "operands": [
+              {
+                "identifier": "workflow",
+                "operands": [
+                  "workflow-IxBoAi1e"
+                ]
+              },
+              "workflow-IxBoAi1e-<main>:7-commit"
+            ]
+          },
+          {
+            "identifier": "asset",
+            "operands": [
+              "surf_res"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "workflow-result",
+        "operands": [
+          {
+            "identifier": "workflow",
+            "operands": [
+              "workflow-IxBoAi1e"
+            ]
+          },
+          {
+            "identifier": "asset",
+            "operands": [
+              "surf_res"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "node-at",
+        "operands": [
+          {
+            "identifier": "node",
+            "operands": [
+              {
+                "identifier": "workflow",
+                "operands": [
+                  "workflow-IxBoAi1e"
+                ]
+              },
+              "workflow-IxBoAi1e-<main>:7-commit"
+            ]
+          },
+          {
+            "identifier": "domain",
+            "operands": [
+              {
+                "identifier": "user",
+                "operands": [
+                  "test"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "create",
+      "operand": {
+        "identifier": "workflow-result-recipient",
+        "operands": [
+          {
+            "identifier": "workflow-result",
+            "operands": [
+              {
+                "identifier": "workflow",
+                "operands": [
+                  "workflow-IxBoAi1e"
+                ]
+              },
+              {
+                "identifier": "asset",
+                "operands": [
+                  "surf_res"
+                ]
+              }
+            ]
+          },
+          {
+            "identifier": "user",
+            "operands": [
+              "amy"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "act",
+      "name": "no-node-at-dan",
+      "actor": "node",
+      "holds-when": [{
+        "operator": "NOT",
+        "operands": [{
+          "identifier": "node-at",
+          "operands": [
+            [ "node" ],
+            {
+              "identifier": "domain",
+              "operands": [
+                {
+                  "identifier": "user",
+                  "operands": [
+                    "Dan"
+                  ]
+                }
+              ]
+            }
+          ]
+        }]
+      }]
+    },
+    {
+      "kind": "trigger",
+      "operand": {
+        "iterator": "FOREACH",
+        "binds": [ "node" ],
+        "expression": {
+          "identifier": "no-node-at-dan",
+          "operands": [ [ "node" ] ]
+        }
+      }
+    }
+  ],
+  "updates": true
+}
