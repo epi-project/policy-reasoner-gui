@@ -1,13 +1,15 @@
 import React, { FC, useContext, useEffect, useState } from "react"
 import { AuthContext, API } from "../context/auth"
 import Login from "../components/Login"
-import { Alert, Button, ButtonGroup, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, Input, MenuItem, MenuList, TextField, ToggleButton, ToggleButtonGroup } from "@mui/material"
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, InputLabel, MenuItem, Select, TextField, ToggleButton, ToggleButtonGroup } from "@mui/material"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { NEW_VERSION, Policy, PolicyVersion, activateVersion, addPolicy, deactivateVersion, getActiveVersion, getPolicies, getPolicy, newPolicy } from "../api"
-import CodeMirror, { EditorView } from '@uiw/react-codemirror';
-import { javascript } from '@codemirror/lang-javascript';
+import { NEW_VERSION, activateVersion, addPolicy, deactivateVersion, getActiveVersion, getPolicies, getPolicy, newPolicy } from "../api"
+import CodeMirror, { EditorView } from '@uiw/react-codemirror'
+import { javascript } from '@codemirror/lang-javascript'
 import { AxiosError } from "axios"
 import useConnectorInfo from "../hooks/useConnectorInfo"
+import { Policy, PolicyVersion, SYNTAX } from "../api/types"
+import { Loader } from "../components/Loader"
 
 const handleError = (error: any, setErrors: React.Dispatch<React.SetStateAction<string[]>>) => {
     if (!error) {
@@ -22,7 +24,7 @@ const handleError = (error: any, setErrors: React.Dispatch<React.SetStateAction<
         return
     }
 
-    const err = (response.data as any).detail
+    const err = (response.data as any).detail || response.data as string
 
     if (!err) {
         setErrors(e => [...e, `Call returned invalid statuscode: ${response.status} (${response.statusText})`])
@@ -41,6 +43,7 @@ const PoliciesPage: FC = () => {
     const [errors, setErrors] = useState<string[]>([])
     const [shownError, setShownError] = useState<string>()
     const {reasonerConnectorError, reasonerConnectorInfo, reasonerConnectorIsFetching} = useConnectorInfo(authData)
+    const [mode, setMode] = useState<SYNTAX>(SYNTAX.EFLINT)
 
 
     const {isPending, error, data: policies, isFetching} = useQuery({
@@ -50,8 +53,12 @@ const PoliciesPage: FC = () => {
 
     const {isPending: policyIsPending, error: policyError, data: policy, isFetching: policyIsFetching} = useQuery({
         queryKey: ['policies', selected],
-        queryFn: () => getPolicy(selected)
+        queryFn: () => getPolicy(selected),
     })
+
+    useEffect(() => {
+        handleError(policyError, setErrors)
+    }, [policyError])
 
     const {data: activeVersion} = useQuery({
         queryKey: ['policies', 'active'],
@@ -77,7 +84,7 @@ const PoliciesPage: FC = () => {
     })
 
     const addPolicyMutation = useMutation({
-        mutationFn: (policy: Policy) => addPolicy(JSON.parse(policy.content), policy.versionDescription, reasonerConnectorInfo!),
+        mutationFn: (policy: Policy) => addPolicy(policy.content, policy.versionDescription, reasonerConnectorInfo!),
         onSuccess: () => {
             // Invalidate and refetch
             setStatePolicies(x => x.filter(p => p.version !== NEW_VERSION))
@@ -90,7 +97,10 @@ const PoliciesPage: FC = () => {
 
     const staticVersion = (!policy || policy.version > 0) && selected !== NEW_VERSION
 
+    const isLoading = authData?.authenticated(API.POLICY) && (policyIsFetching || isFetching || activateMutation.isPending || deactivateMutation.isPending || addPolicyMutation.isPending)
+
     const addNewPolicy = () => {
+        setMode(SYNTAX.EFLINT)
         setStatePolicies([{version: -1}, ...statePolicies])
         setEditPolicy(newPolicy(policy ? policy : null))
         setSelected(NEW_VERSION)
@@ -99,7 +109,6 @@ const PoliciesPage: FC = () => {
     const dismissError = () => {
         setShownError(undefined)
         setTimeout(() => setErrors(x => x.slice(1)), 500)
-        
     }
 
     useEffect(() => {
@@ -134,6 +143,7 @@ const PoliciesPage: FC = () => {
     return (
         <>
         <div>
+            {isLoading ? <Loader/> : null}
             <h1>Policy API</h1>
             <div style={{display: 'flex', justifyContent: 'space-between'}}>
                 
@@ -158,12 +168,12 @@ const PoliciesPage: FC = () => {
                             {  selected === activeVersion ? 'Deactivate' : 'Activate' }
                         </Button>
                     </div>
-                    <div style={{marginTop: 10}}>
+                    <div style={{marginTop: 10, height: 'calc(100vh - 245px)', overflow: 'scroll'}}>
                         <ToggleButtonGroup orientation="vertical" value={selected} size="large" fullWidth>
                             {
                                 authData?.authenticated(API.POLICY) && statePolicies.length ? statePolicies.map(
                                     x => (
-                                        <ToggleButton key={x.version} color={activeVersion === x.version ? 'success' : 'standard'} onClick={() => setSelected(x.version)} value={x.version}>
+                                        <ToggleButton key={x.version} color={activeVersion === x.version ? 'success' : 'standard'} onClick={() => {setSelected(x.version); x.version === NEW_VERSION && setMode(SYNTAX.EFLINT)}} value={x.version}>
                                             Version {x.version === NEW_VERSION ? 'New' : x.version} {activeVersion === x.version ? ' (active)' : ''}
                                         </ToggleButton>
                                     )
@@ -182,13 +192,19 @@ const PoliciesPage: FC = () => {
                             multiline
                             maxRows={1}
                             label="Description / commmit message"/>
-                        <Button variant="outlined" disabled={staticVersion} onClick={commitVersion}>Commit</Button>
+                        <Button variant="outlined" disabled={staticVersion || (!editPolicy?.content || !editPolicy.versionDescription) } onClick={commitVersion}>Commit</Button>
                     </div>
-                    <div style={{marginTop: 10}}>
+                    <div style={{marginTop: 10, position: 'relative'}}>
+                        <FormControl style={{position: 'absolute', bottom: 10, right: 10, zIndex: 1}} variant="outlined" sx={{ m: 1, minWidth: 130}}>
+                            <Select disabled={!staticVersion} value={mode} sx={{width: '100%'}} onChange={e => setMode(e.target.value as SYNTAX)}>
+                                <MenuItem value={SYNTAX.EFLINT}>{staticVersion ? "E-Flint" : <em>E-Flint</em>}</MenuItem>
+                                <MenuItem value={SYNTAX.JSON}>E-Flint json</MenuItem>
+                            </Select>
+                        </FormControl>
                         <CodeMirror
                             theme="dark"
                             readOnly={staticVersion}
-                            value={staticVersion ? (policy ? policy.content : '') : editPolicy!.content}
+                            value={staticVersion ? (!policy ? '' : mode === SYNTAX.EFLINT ? policy.content : policy.jsonContent) : editPolicy!.content}
                             onChange={e => setEditPolicy({...editPolicy!, content: e})}
                             extensions={[javascript({ jsx: true }), EditorView.lineWrapping]}
                             maxWidth="100%" height="calc(100vh - 245px)"/>
