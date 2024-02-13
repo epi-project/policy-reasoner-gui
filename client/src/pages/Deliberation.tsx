@@ -9,6 +9,8 @@ import { DeliberationType, Workflow, Option, TaskOption, WorkflowConvResult } fr
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 
+const USE_CASE = "central"
+
 interface MenuItemData { 
     id: DeliberationType;
     label: string;
@@ -26,6 +28,7 @@ const menuItems : MenuItemData[] = [{
     enabled: ['task'],
     generateRequest: async (workflow: Workflow, task?: Option, data?: string) => {
         return {
+            use_case: USE_CASE,
             workflow: workflow,
             task_id: task!.pg
         }
@@ -40,6 +43,7 @@ const menuItems : MenuItemData[] = [{
     generateRequest: async (workflow: Workflow, task?: Option, data?: string) => {
         let req: Record<string, any> = {
             workflow: workflow, 
+            use_case: USE_CASE,
         }
 
         if (task) {
@@ -47,7 +51,7 @@ const menuItems : MenuItemData[] = [{
         }
 
         if (data) {
-            req.data_id = JSON.parse(data!)
+            req.data_id = data
         }
 
         return req
@@ -62,6 +66,7 @@ const menuItems : MenuItemData[] = [{
     generateRequest: async (workflow: Workflow, task?: Option, data?: string) => {
         return {
             workflow: workflow, 
+            use_case: USE_CASE,
         }
     }
 }]
