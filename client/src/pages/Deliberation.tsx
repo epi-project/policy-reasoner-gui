@@ -1,10 +1,11 @@
-import React, { FC, useRef, useState } from "react"
-import { Button, FormLabel, MenuItem, Select, Stack, TextField } from "@mui/material"
+import React, { FC, useEffect, useRef, useState } from "react"
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormLabel, InputLabel, MenuItem, Select, Stack, TextField } from "@mui/material"
 import { javascript } from "@codemirror/lang-javascript";
 import CodeMirror, { EditorView } from '@uiw/react-codemirror';
 import Login from "../components/Login";
 import { API } from "../context/auth";
-import { DeliberationType, Workflow, convBS, deliberate, extractTasks, Option } from "../api";
+import { convBS, deliberate } from "../api";
+import { DeliberationType, Workflow, Option, TaskOption, WorkflowConvResult } from "../api/types";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 
@@ -69,6 +70,34 @@ const validate = (item : MenuItemData, task : Option | undefined, dataset : stri
     return !!workflow && item.validate(task, dataset)
 }
 
+const handleErr = (error: any, setError: (string) => void) => {
+    if (!error) {
+        return
+    }
+
+    const response = (error as AxiosError).response
+
+    if (!response) {
+        let msg = (error as AxiosError).message
+        setError(msg || `${msg}`)
+        return
+    }
+
+    let err = (response.data as any).detail || response.data
+
+    if (!err) {
+        setError(`Call returned invalid statuscode: ${response.status} (${response.statusText})`)
+        return
+    }
+
+    err = `Call returned invalid statuscode: ${response.status} (${response.statusText})
+
+${err}            
+` 
+
+    setError(err)
+}
+
 const DeliberationPage: FC = () => {
     const [curItem, setCurItem] = useState<MenuItemData>(menuItems[0])
     const [loading, setLoading] = useState<boolean>(false)
@@ -76,74 +105,85 @@ const DeliberationPage: FC = () => {
     const [dataset, setDataset] = useState('')
     const [workflow, setWorkflow] = useState('')
     const [jsonWorkflow, setJsonWorkflow] = useState<Workflow | null>(null)
-    const [taskOptions, setTaskOptions] = useState<Option[]>([])
+    const [taskOptions, setTaskOptions] = useState<TaskOption[]>([])
+    const [workflowResults, setWorkflowResults] = useState<string[]>([])
     const [response, setResponse] = useState('')
+    const [errors, setErrors] = useState<string[]>([])
+    const [shownError, setShownError] = useState<string>()
     const [workflowWidth, setWorkflowWidth] = useState(60)
     const [responseWidth, setResponseWidth] = useState(40)
     const contentRef = useRef(null)
-
-
-    const updateWorkflow = async (wf: string) => {
-        if (!wf) {
-            setWorkflow(wf)
-            setJsonWorkflow(null)
-            setTaskOptions([])
+    
+    useEffect(() => {
+        if (!errors.length || !!shownError) {
             return
         }
-        const jsonwf = await convBS(wf)
-        const options = extractTasks(jsonwf)
 
-        setWorkflow(wf)
-        setJsonWorkflow(jsonwf)
-        setTaskOptions(options)
+        setShownError(errors[0])
+    }, [errors])
+
+    useEffect(() => {
+        const wf = localStorage.getItem('workflow')
+
+        if (wf) {
+            updateWorkflow(wf, true)
+        }
+    }, [])
+
+    const reset = () => {
+        setJsonWorkflow(null)
+        setTaskOptions([])
         setTask(-1)
+        setDataset('')
+        setWorkflowResults([])
     }
 
-    // extractTasks()
+    const dismissError = () => {
+        setShownError(undefined)
+        setTimeout(() => setErrors(x => x.slice(1)), 500)
+    }
+    
+    const updateWorkflow = async (wf: string, reportErr: boolean) => {
+        console.log('update', reportErr, !wf)
+        localStorage.setItem('workflow', wf)
+        reset()
+        if (!wf) {
+            setWorkflow(wf)
+            return
+        }
+        
+        try {
+            setWorkflow(wf)
+            const convResult = await convBS(wf)
+            setJsonWorkflow(convResult.workflow)
+            setTaskOptions(convResult.tasks)
+            setWorkflowResults(convResult.results || [])
+        } catch(err) {
+            console.log('go and check', reportErr)    
+            reportErr && handleErr(err, (err) => {
+                console.log('err', err)
+                setErrors([...errors, err])
+            })
+        }
+    }
 
-    const handleErr = (err: any) => {
-        setResponse(err.message)
+    const updateTask = (tid: number) => {
+        setDataset('')
+        setTask(tid)
     }
 
     const canExecute = validate(curItem, task != -1 ? taskOptions[task] : undefined, dataset, workflow)
     const mutation = useMutation({
         mutationFn: deliberate,
         onSuccess: (r) => {
-            console.log(r)
+            setResponse(typeof r.data === "string" ? r.data : JSON.stringify(r.data, null, '    '))
         },
-        onError: (error) => {
-            if (!error) {
-                return
-            }
-        
-            const response = (error as AxiosError).response
-        
-            if (!response) {
-                let msg = (error as AxiosError).message
-                setResponse(msg || `${msg}`)
-                return
-            }
-
-            let err = (response.data as any).detail || response.data
-        
-            if (!err) {
-                setResponse(`Call returned invalid statuscode: ${response.status} (${response.statusText})`)
-                return
-            }
-
-            err = `Call returned invalid statuscode: ${response.status} (${response.statusText})
-
-${err}            
-` 
-        
-            setResponse(err)
-        }
+        onError: (error) => handleErr(error, setResponse)
     })
+
     const exec = async  () => {
-        const req = await curItem.generateRequest(jsonWorkflow!, task != -1 ? taskOptions[task] : undefined)
-        
+        const req = await curItem.generateRequest(jsonWorkflow!, task != -1 ? taskOptions[task] : undefined, dataset)
         mutation.mutate({type: curItem.id, req})
-        
     }
 
     const handleMouseDown = React.useCallback((e: React.MouseEvent) => {
@@ -170,55 +210,82 @@ ${err}
         document.addEventListener('mouseup', handleMouseUp);
     }, [contentRef.current]);
 
-    console.log('tasks', taskOptions)
-
     return (
         <>
         <div>
             <h1>Deliberation API</h1>
             <div style={{display: 'flex', justifyContent: 'space-between'}}>
                 
-                <div style={{width: '200px', paddingTop: 50}}>
+                <div style={{width: '225px', paddingTop: 50, paddingRight: '25px'}}>
                     <Stack spacing={1}>
-                        <Select
-                            sx={{width: '100%'}}
-                            value={curItem.id}
-                            onChange={e => {
-                                setTask(-1)
-                                setDataset('')
-                                setCurItem(menuItems.filter(item => item.id === e.target.value)[0])
-                            }}
-                        >
-                            {menuItems.map(item => <MenuItem key={item.id} value={item.id}>{item.label}</MenuItem>)}
-                        </Select>
+                        <FormControl variant="outlined" sx={{ m: 1, minWidth: 120 }}>
+                            <InputLabel shrink>Request</InputLabel>
+                            <Select
+                                sx={{width: '100%'}}
+                                value={curItem.id}
+                                label="Request"
+                                onChange={e => {
+                                    updateTask(-1)
+                                    setCurItem(menuItems.filter(item => item.id === e.target.value)[0])
+                                }}
+                            >
+                                {menuItems.map(item => <MenuItem key={item.id} value={item.id}>{item.label}</MenuItem>)}
+                            </Select>
+                        </FormControl>
                         {
                             curItem.enabled.includes('task') ? (
-                                <Select value={task} sx={{width: '100%'}} onChange={e => setTask(e.target.value as number)} label="Task ID">
-                                    <MenuItem value={-1}><em>Select task</em></MenuItem>
-                                    {taskOptions.map((t, idx) => <MenuItem key={idx} value={idx}>{t.pg[0]}:{t.pg[1]} {t.name}</MenuItem>)}
-                                </Select>
+                                <FormControl variant="outlined" sx={{ m: 1, minWidth: 120 }}>
+                                    <InputLabel shrink>Task ID</InputLabel>
+                                    <Select value={task} sx={{width: '100%'}} onChange={e => updateTask(e.target.value as number)} label="Task ID">
+                                        <MenuItem disabled={curItem.id == DeliberationType.data ? false : true} value={-1}><em>{ curItem.id == DeliberationType.data ? "Workflow result": "Select task" }</em></MenuItem>
+                                        {taskOptions.map((t, idx) => <MenuItem key={idx} value={idx}>{t.pg[0]}:{t.pg[1]} {t.name}</MenuItem>)}
+                                    </Select>
+                                </FormControl>
                             ): null
                         }
-                        {curItem.enabled.includes('dataset') ? <TextField value={dataset} sx={{width: '100%'}} onChange={e => setDataset(e.target.value as string)} label="Dataset ID"/> : null}
+                        {   curItem.enabled.includes('dataset') ? (
+                                <FormControl variant="outlined" sx={{ m: 1, minWidth: 120 }}>
+                                    <InputLabel shrink>Dataset ID</InputLabel>
+                                    <Select displayEmpty value={dataset} sx={{width: '100%'}} onChange={e => setDataset(e.target.value as string)} label="Dataset ID">
+                                        <MenuItem disabled value={''}><em>{ task > -1 ? "Select dataset" : "Select workflow result"}</em></MenuItem>
+                                        {  
+                                            taskOptions.length && task > -1 ? (
+                                                taskOptions[task].datasets.map((t, idx) => <MenuItem key={idx} value={t}>{t}</MenuItem>)
+                                            ) : (
+                                                workflowResults.map((t, idx) => <MenuItem key={idx} value={t}>{t}</MenuItem>)
+                                            )
+                                        }
+                                    </Select>
+                                </FormControl>
+                            ) : null
+                        }
                         <Button disabled={!canExecute} size="large" variant="contained" sx={{width: '100%'}} onClick={async () => {
                             setLoading(true)
                             try {
                                 await exec()
                             } catch(err) {
-                                console.log('errrr', err)
-                                handleErr(err)
+                                handleErr(err, setResponse)
                             }
                             setLoading(false)
                         }}>Execute</Button>
                     </Stack>
                 </div>
-                <div style={{flex:1, display: 'flex'}}>
-                    <div style={{width: `${workflowWidth}%`, padding: "0 0 0 25px"}}>
+                <div style={{flex:1, display: 'flex', maxWidth: 'calc(100% - 225px)'}}>
+                    <div style={{width: `calc(${workflowWidth}%)`}}>
                         <FormLabel sx={{marginY: 2,display: 'block'}}>Workflow</FormLabel>
-                        <CodeMirror width="100%" theme="dark" onChange={data => updateWorkflow(data)} value={workflow} extensions={[javascript({ jsx: true })]} height="calc(100vh - 235px)"/>
+                        <CodeMirror 
+                            width="100%"
+                            theme="dark"
+                            onChange={data => updateWorkflow(data, false)}
+                            onBlur={() => {updateWorkflow(workflow, true)}}
+                            value={workflow}
+                            extensions={[javascript({ jsx: true })]}
+                            height="calc(100vh - 235px)"
+                            style={{fontSize: '0.9rem'}}
+                        />
                     </div>
                     <div ref={contentRef} onMouseDown={handleMouseDown} style={{padding: 10, cursor: 'col-resize'}}></div>
-                    <div style={{width: `${responseWidth}%`}}>
+                    <div style={{width: `calc(${responseWidth}%)`}}>
                         <FormLabel sx={{marginY: 2,display: 'block'}}>Response</FormLabel>
                         <CodeMirror
                             basicSetup={{lineNumbers: false}}
@@ -228,6 +295,7 @@ ${err}
                             value={response}
                             extensions={[javascript({ jsx: true }), EditorView.lineWrapping]}
                             height="calc(100vh - 235px)"
+                            style={{fontSize: '0.9rem'}}
                         />
                     </div>
                 </div>
@@ -235,6 +303,24 @@ ${err}
             </div>
         </div>
         <Login api={API.DELIBERATION}/>
+        <Dialog
+            open={!!shownError}
+            onClose={dismissError}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+        >
+            <DialogTitle id="alert-dialog-title">
+            {"An error occured"}
+            </DialogTitle>
+            <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+                <pre style={{whiteSpace: 'pre-wrap'}}>{errors[0]}</pre>
+            </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+            <Button onClick={dismissError}>Ok</Button>
+            </DialogActions>
+        </Dialog>
         </>
     )
 }
