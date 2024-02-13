@@ -24,7 +24,8 @@ const Layout: FC = () => {
     <div>
       <AppBar position="fixed" sx={{zIndex: 9999}}>
         <div style={{padding: '0 25px'}}>
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex'} }}>
+          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex'} }} style={{justifyContent: 'space-between'}}>
+                <div style={{display: 'flex'}}>
                 <Button onClick={() => navigate("/reasoner-connector-info")} sx={{ my: 2, color: isIndexRoute || isConnInfoRoute ? '#4dabf5' : 'white', display: 'block' }}>
                       Reasoner connector info
                 </Button>
@@ -34,16 +35,18 @@ const Layout: FC = () => {
                 <Button onClick={() => navigate("/deliberation")} sx={{ my: 2, color: isDeliberationRoute ? '#4dabf5' : 'white', display: 'block' }}>
                       Deliberation
                 </Button>
+                </div>
                
                 {authData?.authenticated(API.DELIBERATION) || authData?.authenticated(API.POLICY) ? (
-                   <Button onClick={async () => {
+                   <Button
+                      onClick={async () => {
                       if (authData.authenticated(API.DELIBERATION)) {
                         await authData.logout(API.DELIBERATION)
                       }
                       if (authData.authenticated(API.POLICY)) {
                         await authData.logout(API.POLICY)
                       }
-                    }} sx={{ my: 2, color: isDeliberationRoute ? '#4dabf5' : 'white', display: 'block' }}>
+                    }} sx={{ my: 2, color: 'white', display: 'block' }}>
                       Logout
                   </Button>
                 ) : null}
