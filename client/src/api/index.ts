@@ -1,5 +1,7 @@
 import axios from "axios"
 import { API } from "../context/auth";
+import { Policy, PolicyVersion, reasonerConnectorInfo, AuthDataViewmodel, Workflow, DeliberationType, Option, WorkflowConvResult } from "./types";
+import { example } from "./test.wf";
 
 
 axios.defaults.withCredentials = true;
@@ -10,57 +12,20 @@ const buildUrl = (...path : string[]) : string => {
     return [baseAddr, ...path].join('/')
 }
 
-export interface PolicyVersion {
-    version: number;
-}
-
 export const NEW_VERSION = -1
 
-const template = `[
-    {
-        "version": "0.1.0",
-        "kind": "phrases",
-        "phrases": []
-    }
-]`
+const template = `Invariant violate-never
+    When True.`
 
 export const newPolicy = (parent: Policy | null) : Policy => ({
     version: -1,
     reasoner: '',
     reasonerVersion: '',
     content: parent ? parent.content : template,
+    jsonContent: '',
     description: '',
     versionDescription: ''
 })
-
-export interface Policy {
-    version: number;
-    reasoner: string;
-    reasonerVersion: string;
-    content: string;
-    description: string;
-    versionDescription: string;
-}
-
-interface PolicyContentPostModel {
-    reasoner: string;
-    reasoner_version: string;
-    content: any;
-}
-
-interface PostPolicy {
-    description: string;
-    version_description: string;
-    content: PolicyContentPostModel[],
-}
-
-export interface reasonerConnectorInfo {
-    hash: string;
-    context: {
-        version: string,
-        type: string
-    } & Record<string, any>
-}
 
 export const getPolicies = async () : Promise<PolicyVersion[]> => {
     return (await axios.get(buildUrl('policies'))).data as PolicyVersion[]
@@ -81,13 +46,15 @@ export const getReasonerConnectorInfo = async (): Promise<reasonerConnectorInfo>
 }
 
 export const addPolicy = async (content: string, version_description: string, info: reasonerConnectorInfo)  => {
+    const jsonContent = await convEFlint(content)
+
     return await axios.post(buildUrl('policies'), {
         description: '',
         version_description,
         content: [{
             reasoner: info.context.type,
             reasoner_version: info.context.version,
-            content,
+            content: jsonContent ,
         }]
     })
 }
@@ -109,24 +76,17 @@ export const getPolicy = async (version?: number) : Promise<Policy | null> => {
 
     const policy = (await axios.get(buildUrl('policies', version.toString(10)))).data as any
 
+    const eflintPolicy = await convEFlintJSON(policy.content[0].content)
+
     return {
         version: policy.version,
         reasoner: policy.content[0].reasoner,
         reasonerVersion: policy.content[0].reasoner_version,
         description: policy.description,
         versionDescription: policy.version_description,
-        content: JSON.stringify(policy.content[0].content, null, 4)
+        content: eflintPolicy,
+        jsonContent: JSON.stringify(policy.content[0].content, null, '    ')
     }
-}
-
-export interface AuthDataViewmodel{
-    policy: string,
-    deliberation: string
-}
-
-export interface AuthDataPostModel{
-    t: API,
-    token: string,
 }
 
 export const getAuthData = async () : Promise<AuthDataViewmodel> => {
@@ -141,42 +101,16 @@ export const removeAuth = async () : Promise<undefined> => {
     await axios.delete(buildUrl('authenticate'))
 }
 
-export enum DeliberationType {
-    'task' = 'task',
-    'data' = 'data',
-    'workflow' = 'workflow',
+export const convBS = async(bsWorkflow: string) : Promise<WorkflowConvResult> => {
+    return (await axios.post(buildUrl('conv') + "?from=branescript&to=wir", bsWorkflow)).data as WorkflowConvResult
 }
 
-interface Edge {
-    "kind": string,
-    "t": number,
+export const convEFlintJSON = async(eflintJSON: string) : Promise<string> => {
+    return (await axios.post(buildUrl('conv') + "?from=eflintjson&to=eflint", eflintJSON)).data
 }
 
-interface Task {
-    "p": string,
-    "v": string,
-    "d": {
-      "n": string,
-    },
-}
-
-export interface Workflow {
-    graph: Edge[],
-    funcs: Record<number, Edge[]>
-    table: {
-        tasks: Task[]
-    }
-}
-
-type ProgramCounter = ["<main>" | number, number]
-
-export interface Option {
-    name: string,
-    pg: ProgramCounter
-}
-
-export const convBS = async(bsWorkflow: string) : Promise<Workflow> => {
-    return (await axios.post(buildUrl('conv') + "?from=branescript&to=wir", bsWorkflow)).data as Workflow
+export const convEFlint = async(eflint: string) : Promise<string> => {
+    return (await axios.post(buildUrl('conv') + "?from=eflint&to=eflintjson", eflint)).data
 }
 
 export const extractTasks = (wf: Workflow) : Option[] => {
@@ -184,8 +118,6 @@ export const extractTasks = (wf: Workflow) : Option[] => {
         name: wf.table.tasks[cur.t].d.n,
         pg: ["<main>", idx]
     } : null).filter(Boolean) as Option[]
-
-    console.log('wf.graph', wf.graph)
 
     tasks = Object.keys(wf.funcs).reduce<Option[]>((acc, fnIdx) => {
         const edges = wf.funcs[parseInt(fnIdx)]
@@ -201,6 +133,7 @@ export const extractTasks = (wf: Workflow) : Option[] => {
 }
 
 export const deliberate = async ({type, req}:  {type: DeliberationType, req: any})  => {
+    req.workflow.user = 'test'
     const body = JSON.stringify(req).replace('18446744073709552000', '18446744073709551615')
 
     return await axios.post(buildUrl('deliberation', type), body, { headers: {'Content-Type': 'application/json'} })
