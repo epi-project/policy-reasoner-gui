@@ -10,7 +10,7 @@ use crate::eflinttojson::eflint_to_json;
 #[derive(Deserialize)]
 pub struct ConvQuery {
     pub from: CodeFormat,
-    pub to:   CodeFormat,
+    pub to: CodeFormat,
 }
 
 #[derive(Deserialize, PartialEq, Debug)]
@@ -24,7 +24,10 @@ pub enum CodeFormat {
 
 pub async fn post_conv(Query(conv): Query<ConvQuery>, body: String) -> (StatusCode, String) {
     if conv.from == conv.to {
-        return (StatusCode::BAD_REQUEST, "From and into can't be the same format".into());
+        return (
+            StatusCode::BAD_REQUEST,
+            "From and into can't be the same format".into(),
+        );
     }
 
     println!("from: {:?} to {:?}", conv.from, conv.to);
@@ -40,7 +43,13 @@ pub async fn post_conv(Query(conv): Query<ConvQuery>, body: String) -> (StatusCo
             Err(err) => return (StatusCode::BAD_REQUEST, err.into()),
         };
     } else if conv.from == CodeFormat::BraneScript && conv.to == CodeFormat::WIR {
-        return match bs_to_wir(IndexSource::LocalTest("./tests/packages".into()), IndexSource::LocalTest("./tests/data".into()), body).await {
+        return match bs_to_wir(
+            IndexSource::LocalTest("./tests/packages".into()),
+            IndexSource::LocalTest("./tests/data".into()),
+            body,
+        )
+        .await
+        {
             Ok(ret) => (StatusCode::OK, ret),
             Err((code, msg)) => return (code, msg),
         };
@@ -54,18 +63,25 @@ pub async fn to_eflint_json(body: String) -> Result<String, String> {
         Ok(req) => Ok(req),
         Err(err) => {
             return Err(err.to_string());
-        },
+        }
     }
 }
 pub async fn to_eflint(body: String) -> Result<String, String> {
-    let req: Request = match serde_json::from_str::<Vec<Request>>(&body) {
-        Ok(req) => req.iter().next().unwrap_or_else(|| todo!()).to_owned(),
+    let req: Request = match serde_json::from_str::<Request>(&body) {
+        Ok(req) => req,
         Err(err) => {
             return Err(err.to_string());
-        },
+        }
     };
 
-    let sreq: String = format!("{}", req.display_syntax());
+    let phrases: Vec<String> = req
+        .into_phrases()
+        .phrases
+        .iter()
+        .map(|p| p.display_syntax().to_string())
+        .collect();
 
-    return Ok(sreq);
+    let sreq = phrases.join("\n");
+
+    return Ok(sreq.trim().into());
 }
