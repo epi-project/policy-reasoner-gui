@@ -3,10 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "source": "src/index.html",
-  "main": "index.js",
   "scripts": {
     "start": "npx parcel",
-    "build": "npx parcel build",
+    "build": "npx parcel build --dist-dir ../clientbuild ",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
