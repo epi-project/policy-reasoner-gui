@@ -1,0 +1,44 @@
+# DOCKERCOMPOSE for the POLICY REASONER GUI
+#   by Tim Müller
+# 
+# Runs both the client webserver and Rust backend in a container.
+# 
+
+
+version: '3.6'
+services:
+  policy-reasoner-gui-backend:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+      target: backend
+      tags:
+      - policy-reasoner-gui-backend:latest
+    container_name: policy-reasoner-gui-backend
+    restart: always
+    volumes:
+    - ${KEY_PATH:-./key}:/key
+
+  policy-reasoner-gui-client:
+    depends_on:
+    - policy-reasoner-gui-backend
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+      target: client
+      tags:
+      - policy-reasoner-gui-client:latest
+    container_name: policy-reasoner-gui-client
+    restart: always
+    ports:
+    - ${PORT:-1234}:1234
+
+networks:
+  default:
+    name: policy-reasoner-gui
