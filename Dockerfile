@@ -6,12 +6,12 @@
 
 
 ##### BUILD CONTAINER #####
-FROM rust:1 AS backend-build
+FROM rust:1-alpine3.19 AS backend-build
 
 # Install additional dependencies
-RUN apt-get update && apt-get install -y \
-    cmake \
- && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache \
+    g++ make cmake \
+    musl-dev pkgconf openssl-dev
 
 # Copy the source files
 RUN mkdir -p /build
@@ -24,9 +24,8 @@ COPY Cargo.lock /build/Cargo.lock
 WORKDIR /build
 RUN --mount=type=cache,id=cargoidx,target=/usr/local/cargo/registry \
     --mount=type=cache,id=policyreasonerguicache,target=/build/target \
-    cargo build --release \
- && cp /build/target/release/policy-reasoner-client-backend /policy-reasoner-client-backend \
- && chmod +x /policy-reasoner-client-backend
+    cargo build --release --target x86_64-unknown-linux-musl \
+ && cp /build/target/x86_64-unknown-linux-musl/release/policy-reasoner-client-backend /policy-reasoner-client-backend
 
 
 
@@ -39,16 +38,15 @@ FROM alpine:3.19 AS backend
 ARG UID=1000
 ARG GID=1000
 
-# Install additional dependencies
-RUN apk add --no-cache libc6-compat libgcc
+# # Install additional dependencies
+# RUN apk add --no-cache libc6-compat libgcc
 
 # Setup a user mirroring the main one
 RUN addgroup -g $GID amy
 RUN adduser -u $UID -G amy -g Amy -D amy
 
 # Copy the binary
-COPY --from=backend-build /policy-reasoner-client-backend /policy-reasoner-client-backend
-RUN chown amy:amy /policy-reasoner-client-backend
+COPY --chown=amy:amy --from=backend-build /policy-reasoner-client-backend /policy-reasoner-client-backend
 
 # Run it
 USER amy
@@ -66,21 +64,20 @@ FROM alpine:3.19 AS client
 ARG UID=1000
 ARG GID=1000
 
-# Install additional dependencies
-RUN apk add --no-cache npm
-
 # Setup a user mirroring the main one
 RUN addgroup -g $GID amy
 RUN adduser -u $UID -G amy -g Amy -D amy
 
+# Install additional dependencies
+RUN apk add --no-cache npm
+
 # Copy the source files
-COPY client /home/amy/client
-RUN chown -R amy:amy /home/amy/client
+COPY --chown=amy:amy client /home/amy/client
 
 # Install node packages
 USER amy
 WORKDIR /home/amy/client
-RUN npm i parcel \
+RUN npm i parcel @parcel/transformer-sass --save-dev \
  && npm cache clean --force
 
 # Run the thing
