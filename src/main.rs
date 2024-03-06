@@ -15,8 +15,11 @@ use policy_reasoner_client_backend::policy::{
 };
 use policy_reasoner_client_backend::reasoner_conn::get_reasoner_connector_info;
 use specifications::address::Address;
-use tower_http::cors::CorsLayer;
-
+use std::env;
+use tower_http::services::{ServeDir, ServeFile};
+use tower_http::trace::{DefaultOnResponse, TraceLayer};
+use tower_http::LatencyUnit;
+use tracing::Level;
 
 /***** ARGUMENTS *****/
 /// Toplevel arguments
@@ -32,10 +35,6 @@ struct Arguments {
     checker_address: Address,
 }
 
-
-
-
-
 #[tokio::main]
 async fn main() {
     // Parse arguments
@@ -50,17 +49,10 @@ async fn main() {
         }
     } else {
         // initialize tracing
-        tracing_subscriber::fmt::init();
+        tracing_subscriber::fmt()
+            .with_max_level(tracing::Level::DEBUG)
+            .init();
     }
-
-    // inir CORS
-    let cors = CorsLayer::new()
-        // allow `GET` and `POST` when accessing the resource
-        .allow_methods([Method::GET, Method::POST, Method::DELETE])
-        // allow requests from any origin
-        .allow_origin("http://localhost:1234".parse::<HeaderValue>().unwrap())
-        .allow_credentials(true)
-        .allow_headers([CONTENT_TYPE]);
 
     let key = getKey("./key");
 
@@ -69,27 +61,43 @@ async fn main() {
         key,
     };
 
-    // build our application with a route
+    let static_base_path = env::var("CLIENT_FILES_PATH").unwrap_or_else(|_| "./clientbuild".into());
+
     let app = Router::new()
-        // `GET /` goes to `root`
-        .route("/conv", post(post_conv))
-        .route("/authenticate", post(post_authenticate))
-        .route("/authenticate", get(get_authenticate))
-        .route("/authenticate", delete(logout))
-        .route("/policies", get(get_policies))
-        .route("/policies", post(post_add_policy))
-        .route("/policies/active", get(get_active_policy))
-        .route("/policies/active", post(post_activate_policy))
-        .route("/policies/active", delete(delete_deactivate_policy))
-        .route("/policies/:version", get(get_policy))
-        .route("/reasoner-connector-info", get(get_reasoner_connector_info))
-        .route("/deliberation/task", post(post_exec_task))
-        .route("/deliberation/data", post(post_access_data))
-        .route("/deliberation/workflow", post(post_validate_workflow))
-        .layer(cors)
+        .nest_service(
+            "/",
+            ServeDir::new(&static_base_path).not_found_service(ServeFile::new(format!(
+                "{}/{}",
+                &static_base_path, "index.html"
+            ))),
+        )
+        .route("/api/conv", post(post_conv))
+        .route("/api/authenticate", post(post_authenticate))
+        .route("/api/authenticate", get(get_authenticate))
+        .route("/api/authenticate", delete(logout))
+        .route("/api/policies", get(get_policies))
+        .route("/api/policies", post(post_add_policy))
+        .route("/api/policies/active", get(get_active_policy))
+        .route("/api/policies/active", post(post_activate_policy))
+        .route("/api/policies/active", delete(delete_deactivate_policy))
+        .route("/api/policies/:version", get(get_policy))
+        .route(
+            "/api/reasoner-connector-info",
+            get(get_reasoner_connector_info),
+        )
+        .route("/api/deliberation/task", post(post_exec_task))
+        .route("/api/deliberation/data", post(post_access_data))
+        .route("/api/deliberation/workflow", post(post_validate_workflow))
+        .layer(
+            TraceLayer::new_for_http().on_response(
+                DefaultOnResponse::new()
+                    .level(Level::INFO)
+                    .latency_unit(LatencyUnit::Millis),
+            ),
+        )
         .with_state(state);
 
-    // run our app with hyper, listening globally on port 3000
+    // run our app with hyper, listening globally on port 3001
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3001").await.unwrap();
     axum::serve(listener, app).await.unwrap();
 }
