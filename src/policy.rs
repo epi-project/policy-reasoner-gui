@@ -32,8 +32,8 @@ pub async fn get_policies(State(state): State<AppState>, jar: PrivateCookieJar) 
 
     let client = reqwest::Client::new();
     let result = match client
-        .get(format!("{}/v1/management/policies/versions", state.checker_address))
         .header("Authorization", format!("Bearer {}", policy_auth_token.value()))
+        .get(format!("{}/v1/management/policies", state.checker_address))
         .send()
         .await
     {
