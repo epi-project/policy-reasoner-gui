@@ -17,15 +17,13 @@ services:
       target: backend
       tags:
       - policy-reasoner-gui:latest
-    container_name: policy-reasoner-gui-backend
+    container_name: policy-reasoner-gui
     restart: always
+    command: [ "--checker-address", "${CHECKER_ADDR:-http://host.docker.internal:3030}" ]
     volumes:
     - ${KEY_PATH:-./key}:/key
-    environment:
-      - CHECKER_ADDR=http://host.docker.internal:3030
     ports:
     - 3001:3001
-    
 
 networks:
   default:

@@ -5,7 +5,7 @@
 # 
 
 
-##### BUILD CONTAINER #####
+##### BACKEND BUILD CONTAINER #####
 FROM rust:1-alpine3.19 AS backend-build
 
 # Install additional dependencies
@@ -28,8 +28,9 @@ RUN --mount=type=cache,id=cargoidx,target=/usr/local/cargo/registry \
  && cp /build/target/x86_64-unknown-linux-musl/release/policy-reasoner-client-backend /policy-reasoner-client-backend
 
 
-##### CLIENT #####
-FROM alpine:3.19 AS client-builder
+
+##### CLIENT BUILD CONTAINER #####
+FROM alpine:3.19 AS client-build
 
 # Define some build args
 ARG UID=1000
@@ -50,7 +51,9 @@ USER amy
 WORKDIR /home/amy/client
 RUN npm i
 
+# Build the backend files itself
 RUN BACKEND_ADDR="/api" npx parcel build
+
 
 
 ##### BACKEND #####
@@ -60,21 +63,19 @@ FROM alpine:3.19 AS backend
 ARG UID=1000
 ARG GID=1000
 
-# # Install additional dependencies
-# RUN apk add --no-cache libc6-compat libgcc
+# Define some environment variables
+ENV CLIENT_FILES_PATH="/home/amy/client"
 
 # Setup a user mirroring the main one
 RUN addgroup -g $GID amy
-RUN adduser -u $UID -G amy -g amy -D amy
-
-RUN mkdir /policy-reasoner-client-backend
+RUN adduser -u $UID -G amy -g Amy -D amy
 
 # Copy the binary
-COPY --chown=amy:amy --from=backend-build /policy-reasoner-client-backend /policy-reasoner-client-backend
+COPY --chown=amy:amy --from=backend-build /policy-reasoner-client-backend /home/amy/policy-reasoner-client-backend
 # # Copy the webapp files
-COPY --chown=amy:amy --from=client-builder /home/amy/client/dist /policy-reasoner-client-backend/clientbuild
+COPY --chown=amy:amy --from=client-build /home/amy/client/dist /home/amy/client
 
 # Run it
 USER amy
 WORKDIR /home/amy
-ENTRYPOINT [ "/policy-reasoner-client-backend", "--checker_address ${CHECKER_ADDR}" ]
+ENTRYPOINT [ "/home/amy/policy-reasoner-client-backend" ]
