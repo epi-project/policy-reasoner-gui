@@ -1,4 +1,3 @@
-//  Exec task request
 //    by John Smith
 //
 //  Created:
@@ -9,7 +8,7 @@
 //    No
 //
 //  Description:
-//!   
+//!   This file contains all logic for interacting with the reasoner's deliberation API
 //
 
 use axum::extract::State;
@@ -18,19 +17,29 @@ use axum_extra::extract::cookie::PrivateCookieJar;
 
 use crate::auth::AppState;
 
-
-pub async fn post_exec_task(State(state): State<AppState>, jar: PrivateCookieJar, body: String) -> (StatusCode, String) {
+//  Exec task request
+pub async fn post_exec_task(
+    State(state): State<AppState>,
+    jar: PrivateCookieJar,
+    body: String,
+) -> (StatusCode, String) {
     let deliberation_auth_token = match jar.get("reasoner_deliberation_auth") {
         Some(data) => data,
         None => {
             return (StatusCode::UNAUTHORIZED, "".into());
-        },
+        }
     };
     let client = reqwest::Client::new();
     let result = match client
-        .post(format!("{}/v1/deliberation/execute-task", state.checker_address))
+        .post(format!(
+            "{}/v1/deliberation/execute-task",
+            state.checker_address
+        ))
         .body(body)
-        .header("Authorization", format!("Bearer {}", deliberation_auth_token.value()))
+        .header(
+            "Authorization",
+            format!("Bearer {}", deliberation_auth_token.value()),
+        )
         .header("Content-Type", "application/json")
         .send()
         .await
@@ -38,7 +47,7 @@ pub async fn post_exec_task(State(state): State<AppState>, jar: PrivateCookieJar
         Ok(r) => r,
         Err(err) => {
             return (StatusCode::INTERNAL_SERVER_ERROR, format!("Err: {:?}", err));
-        },
+        }
     };
 
     let status = result.status().as_u16();
@@ -56,26 +65,36 @@ pub async fn post_exec_task(State(state): State<AppState>, jar: PrivateCookieJar
         Ok(body) => body,
         Err(err) => {
             return (StatusCode::INTERNAL_SERVER_ERROR, format!("Err: {:?}", err));
-        },
+        }
     };
 
     (StatusCode::OK, body)
 }
 
 // Access data request
-pub async fn post_access_data(State(state): State<AppState>, jar: PrivateCookieJar, body: String) -> (StatusCode, String) {
+pub async fn post_access_data(
+    State(state): State<AppState>,
+    jar: PrivateCookieJar,
+    body: String,
+) -> (StatusCode, String) {
     let deliberation_auth_token = match jar.get("reasoner_deliberation_auth") {
         Some(data) => data,
         None => {
             return (StatusCode::UNAUTHORIZED, "".into());
-        },
+        }
     };
     println!("Bearer {}", deliberation_auth_token.value());
     let client = reqwest::Client::new();
     let result = match client
-        .post(format!("{}/v1/deliberation/access-data", state.checker_address))
+        .post(format!(
+            "{}/v1/deliberation/access-data",
+            state.checker_address
+        ))
         .body(body)
-        .header("Authorization", format!("Bearer {}", deliberation_auth_token.value()))
+        .header(
+            "Authorization",
+            format!("Bearer {}", deliberation_auth_token.value()),
+        )
         .header("Content-Type", "application/json")
         .send()
         .await
@@ -83,7 +102,7 @@ pub async fn post_access_data(State(state): State<AppState>, jar: PrivateCookieJ
         Ok(r) => r,
         Err(err) => {
             return (StatusCode::INTERNAL_SERVER_ERROR, format!("Err: {:?}", err));
-        },
+        }
     };
 
     let status = result.status().as_u16();
@@ -101,25 +120,35 @@ pub async fn post_access_data(State(state): State<AppState>, jar: PrivateCookieJ
         Ok(body) => body,
         Err(err) => {
             return (StatusCode::INTERNAL_SERVER_ERROR, format!("Err: {:?}", err));
-        },
+        }
     };
 
     (StatusCode::OK, body)
 }
 
 // Validate workflow request
-pub async fn post_validate_workflow(State(state): State<AppState>, jar: PrivateCookieJar, body: String) -> (StatusCode, String) {
+pub async fn post_validate_workflow(
+    State(state): State<AppState>,
+    jar: PrivateCookieJar,
+    body: String,
+) -> (StatusCode, String) {
     let deliberation_auth_token = match jar.get("reasoner_deliberation_auth") {
         Some(data) => data,
         None => {
             return (StatusCode::UNAUTHORIZED, "".into());
-        },
+        }
     };
     let client = reqwest::Client::new();
     let result = match client
-        .post(format!("{}/v1/deliberation/execute-workflow", state.checker_address))
+        .post(format!(
+            "{}/v1/deliberation/execute-workflow",
+            state.checker_address
+        ))
         .body(body)
-        .header("Authorization", format!("Bearer {}", deliberation_auth_token.value()))
+        .header(
+            "Authorization",
+            format!("Bearer {}", deliberation_auth_token.value()),
+        )
         .header("Content-Type", "application/json")
         .send()
         .await
@@ -127,7 +156,7 @@ pub async fn post_validate_workflow(State(state): State<AppState>, jar: PrivateC
         Ok(r) => r,
         Err(err) => {
             return (StatusCode::INTERNAL_SERVER_ERROR, format!("Err: {:?}", err));
-        },
+        }
     };
 
     let status = result.status().as_u16();
@@ -145,7 +174,7 @@ pub async fn post_validate_workflow(State(state): State<AppState>, jar: PrivateC
         Ok(body) => body,
         Err(err) => {
             return (StatusCode::INTERNAL_SERVER_ERROR, format!("Err: {:?}", err));
-        },
+        }
     };
 
     (StatusCode::OK, body)

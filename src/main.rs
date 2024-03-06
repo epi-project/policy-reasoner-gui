@@ -1,14 +1,17 @@
-use axum::http::header::CONTENT_TYPE;
-use axum::http::{HeaderValue, Method};
 use axum::routing::{delete, get, post};
 use axum::Router;
 use clap::Parser;
 use humanlog::{DebugMode, HumanLogger};
-use policy_reasoner_client_backend::auth::{getKey, get_authenticate, logout, post_authenticate, AppState};
+use policy_reasoner_client_backend::auth::{
+    getKey, get_authenticate, logout, post_authenticate, AppState,
+};
 use policy_reasoner_client_backend::conv::post_conv;
-use policy_reasoner_client_backend::deliberation::{post_access_data, post_exec_task, post_validate_workflow};
+use policy_reasoner_client_backend::deliberation::{
+    post_access_data, post_exec_task, post_validate_workflow,
+};
 use policy_reasoner_client_backend::policy::{
-    delete_deactivate_policy, get_active_policy, get_policies, get_policy, post_activate_policy, post_add_policy,
+    delete_deactivate_policy, get_active_policy, get_policies, get_policy, post_activate_policy,
+    post_add_policy,
 };
 use policy_reasoner_client_backend::reasoner_conn::get_reasoner_connector_info;
 use specifications::address::Address;
@@ -20,7 +23,12 @@ use tower_http::cors::CorsLayer;
 #[derive(Debug, Parser)]
 struct Arguments {
     /// The address of the checker to connect to.
-    #[clap(short, long, default_value = "http://localhost:3030", help = "The address of the checker to connect to/manage.")]
+    #[clap(
+        short,
+        long,
+        default_value = "http://localhost:3030",
+        help = "The address of the checker to connect to/manage."
+    )]
     checker_address: Address,
 }
 
@@ -36,7 +44,9 @@ async fn main() {
     // Initialize logging
     if std::env::var("HUMANLOGGER").is_ok() {
         if let Err(err) = HumanLogger::terminal(DebugMode::Debug).init() {
-            eprintln!("WARNING: Failed to setup logger: {err} (no logging enabled for this session)");
+            eprintln!(
+                "WARNING: Failed to setup logger: {err} (no logging enabled for this session)"
+            );
         }
     } else {
         // initialize tracing
@@ -54,7 +64,10 @@ async fn main() {
 
     let key = getKey("./key");
 
-    let state = AppState { checker_address: args.checker_address, key };
+    let state = AppState {
+        checker_address: args.checker_address,
+        key,
+    };
 
     // build our application with a route
     let app = Router::new()

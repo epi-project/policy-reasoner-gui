@@ -30,8 +30,6 @@ pub async fn post_conv(Query(conv): Query<ConvQuery>, body: String) -> (StatusCo
         );
     }
 
-    println!("from: {:?} to {:?}", conv.from, conv.to);
-
     if conv.from == CodeFormat::EFlint && conv.to == CodeFormat::EFlintJson {
         return match to_eflint_json(body).await {
             Ok(ret) => (StatusCode::OK, ret),
