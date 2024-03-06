@@ -10,8 +10,8 @@ FROM rust:1-alpine3.19 AS backend-build
 
 # Install additional dependencies
 RUN apk add --no-cache \
-    g++ make cmake \
-    musl-dev pkgconf openssl-dev
+    build-base cmake pkgconf \
+    openssl-dev openssl-libs-static
 
 # Copy the source files
 RUN mkdir -p /build
@@ -28,37 +28,8 @@ RUN --mount=type=cache,id=cargoidx,target=/usr/local/cargo/registry \
  && cp /build/target/x86_64-unknown-linux-musl/release/policy-reasoner-client-backend /policy-reasoner-client-backend
 
 
-
-
-
-##### BACKEND #####
-FROM alpine:3.19 AS backend
-
-# Define some build args
-ARG UID=1000
-ARG GID=1000
-
-# # Install additional dependencies
-# RUN apk add --no-cache libc6-compat libgcc
-
-# Setup a user mirroring the main one
-RUN addgroup -g $GID amy
-RUN adduser -u $UID -G amy -g Amy -D amy
-
-# Copy the binary
-COPY --chown=amy:amy --from=backend-build /policy-reasoner-client-backend /policy-reasoner-client-backend
-
-# Run it
-USER amy
-WORKDIR /home/amy
-ENTRYPOINT [ "/policy-reasoner-client-backend" ]
-
-
-
-
-
 ##### CLIENT #####
-FROM alpine:3.19 AS client
+FROM alpine:3.19 AS client-builder
 
 # Define some build args
 ARG UID=1000
@@ -77,8 +48,33 @@ COPY --chown=amy:amy client /home/amy/client
 # Install node packages
 USER amy
 WORKDIR /home/amy/client
-RUN npm i parcel @parcel/transformer-sass --save-dev \
- && npm cache clean --force
+RUN npm i
 
-# Run the thing
-ENTRYPOINT [ "npx", "parcel" ]
+RUN BACKEND_ADDR="/api" npx parcel build
+
+
+##### BACKEND #####
+FROM alpine:3.19 AS backend
+
+# Define some build args
+ARG UID=1000
+ARG GID=1000
+
+# # Install additional dependencies
+# RUN apk add --no-cache libc6-compat libgcc
+
+# Setup a user mirroring the main one
+RUN addgroup -g $GID amy
+RUN adduser -u $UID -G amy -g amy -D amy
+
+RUN mkdir /policy-reasoner-client-backend
+
+# Copy the binary
+COPY --chown=amy:amy --from=backend-build /policy-reasoner-client-backend /policy-reasoner-client-backend
+# # Copy the webapp files
+COPY --chown=amy:amy --from=client-builder /home/amy/client/dist /policy-reasoner-client-backend/clientbuild
+
+# Run it
+USER amy
+WORKDIR /home/amy
+ENTRYPOINT [ "/policy-reasoner-client-backend", "--checker_address ${CHECKER_ADDR}" ]

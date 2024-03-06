@@ -7,7 +7,7 @@
 
 version: '3.6'
 services:
-  policy-reasoner-gui-backend:
+  policy-reasoner-gui:
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -16,28 +16,16 @@ services:
         GID: ${GID:-1000}
       target: backend
       tags:
-      - policy-reasoner-gui-backend:latest
+      - policy-reasoner-gui:latest
     container_name: policy-reasoner-gui-backend
     restart: always
     volumes:
     - ${KEY_PATH:-./key}:/key
-
-  policy-reasoner-gui-client:
-    depends_on:
-    - policy-reasoner-gui-backend
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-      args:
-        UID: ${UID:-1000}
-        GID: ${GID:-1000}
-      target: client
-      tags:
-      - policy-reasoner-gui-client:latest
-    container_name: policy-reasoner-gui-client
-    restart: always
+    environment:
+      - CHECKER_ADDR=http://host.docker.internal:3030
     ports:
-    - ${PORT:-1234}:1234
+    - 3001:3001
+    
 
 networks:
   default:
