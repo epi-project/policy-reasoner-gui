@@ -3,7 +3,7 @@ use axum::Router;
 use clap::Parser;
 use humanlog::{DebugMode, HumanLogger};
 use policy_reasoner_client_backend::auth::{
-    getKey, get_authenticate, logout, post_authenticate, AppState,
+    get_authenticate, get_key, logout, post_authenticate, AppState,
 };
 use policy_reasoner_client_backend::conv::post_conv;
 use policy_reasoner_client_backend::deliberation::{
@@ -54,7 +54,7 @@ async fn main() {
             .init();
     }
 
-    let key = getKey("./key");
+    let key = get_key("./key");
 
     let state = AppState {
         checker_address: args.checker_address,
