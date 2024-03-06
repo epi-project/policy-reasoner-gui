@@ -1,7 +1,7 @@
 import axios from "axios"
 import { API } from "../context/auth";
 import { Policy, PolicyVersion, reasonerConnectorInfo, AuthDataViewmodel, Workflow, DeliberationType, Option, WorkflowConvResult } from "./types";
-import { example } from "./test.wf";
+import { helloWorldPolicy } from "./hello-world-example";
 
 
 axios.defaults.withCredentials = true;
@@ -14,14 +14,11 @@ const buildUrl = (...path : string[]) : string => {
 
 export const NEW_VERSION = -1
 
-const template = `Invariant violate-never
-    When True.`
-
 export const newPolicy = (parent: Policy | null) : Policy => ({
     version: -1,
     reasoner: '',
     reasonerVersion: '',
-    content: parent ? parent.content : template,
+    content: parent ? parent.content : helloWorldPolicy,
     jsonContent: '',
     description: '',
     versionDescription: ''
