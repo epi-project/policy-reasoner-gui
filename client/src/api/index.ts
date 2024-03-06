@@ -6,7 +6,7 @@ import { helloWorldPolicy } from "./hello-world-example";
 
 axios.defaults.withCredentials = true;
 
-const baseAddr = 'http://localhost:3001'
+const baseAddr = process.env.BACKEND_ADDR ? process.env.BACKEND_ADDR : 'http://localhost:3001/api'
 
 const buildUrl = (...path : string[]) : string => {
     return [baseAddr, ...path].join('/')
