@@ -56,6 +56,20 @@ RUN BACKEND_ADDR="/api" npx parcel build
 
 
 
+##### BUILD EFLINT-TO-JSON BINARY #####
+FROM alpine:3.19 AS eflint-to-json-build
+
+# Install additional dependencies
+RUN apk add --no-cache git go
+
+# Pull the repo & build
+RUN git clone https://github.com/epi-project/eflint-server-go /eflint-server-go \
+ && cd /eflint-server-go/cmd/eflint-to-json \
+ && go build . \
+ && mv ./eflint-to-json /eflint-to-json
+
+
+
 ##### BACKEND #####
 FROM alpine:3.19 AS backend
 
@@ -70,10 +84,12 @@ ENV CLIENT_FILES_PATH="/home/amy/client"
 RUN addgroup -g $GID amy
 RUN adduser -u $UID -G amy -g Amy -D amy
 
-# Copy the binary
+# Copy the backend binary
 COPY --chown=amy:amy --from=backend-build /policy-reasoner-client-backend /home/amy/policy-reasoner-client-backend
-# # Copy the webapp files
+# Copy the webapp files
 COPY --chown=amy:amy --from=client-build /home/amy/client/dist /home/amy/client
+# Copy the eFLINT -> JSON file
+COPY --chown=amy:amy --from=eflint-to-json-build /eflint-to-json /home/amy/bin/eflint-to-json
 
 # Run it
 USER amy
