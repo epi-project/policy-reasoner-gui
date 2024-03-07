@@ -1,13 +1,13 @@
-import React, { FC, useEffect, useRef, useState } from "react"
+import React, { FC, useContext, useEffect, useRef, useState } from "react"
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormLabel, InputLabel, MenuItem, Select, Stack, TextField } from "@mui/material"
 import { javascript } from "@codemirror/lang-javascript";
 import CodeMirror, { EditorView } from '@uiw/react-codemirror';
 import Login from "../components/Login";
-import { API } from "../context/auth";
+import { API, AuthContext } from "../context/auth";
 import { convBS, deliberate } from "../api";
 import { DeliberationType, Workflow, Option, TaskOption, WorkflowConvResult } from "../api/types";
 import { useMutation } from "@tanstack/react-query";
-import { AxiosError } from "axios";
+import { handleError } from "../errors/util";
 
 const USE_CASE = "central"
 
@@ -75,35 +75,8 @@ const validate = (item : MenuItemData, task : Option | undefined, dataset : stri
     return !!workflow && item.validate(task, dataset)
 }
 
-const handleErr = (error: any, setError: (string) => void) => {
-    if (!error) {
-        return
-    }
-
-    const response = (error as AxiosError).response
-
-    if (!response) {
-        let msg = (error as AxiosError).message
-        setError(msg || `${msg}`)
-        return
-    }
-
-    let err = (response.data as any).detail || response.data
-
-    if (!err) {
-        setError(`Call returned invalid statuscode: ${response.status} (${response.statusText})`)
-        return
-    }
-
-    err = `Call returned invalid statuscode: ${response.status} (${response.statusText})
-
-${err}            
-` 
-
-    setError(err)
-}
-
 const DeliberationPage: FC = () => {
+    const authData = useContext(AuthContext)
     const [curItem, setCurItem] = useState<MenuItemData>(menuItems[0])
     const [loading, setLoading] = useState<boolean>(false)
     const [task, setTask] = useState<number>(-1)
@@ -165,10 +138,7 @@ const DeliberationPage: FC = () => {
             setWorkflowResults(convResult.results || [])
         } catch(err) {
             console.log('go and check', reportErr)    
-            reportErr && handleErr(err, (err) => {
-                console.log('err', err)
-                setErrors([...errors, err])
-            })
+            reportErr && handleError(err, setErrors, authData!)
         }
     }
 
@@ -183,7 +153,7 @@ const DeliberationPage: FC = () => {
         onSuccess: (r) => {
             setResponse(typeof r.data === "string" ? r.data : JSON.stringify(r.data, null, '    '))
         },
-        onError: (error) => handleErr(error, setResponse)
+        onError: (error) => handleError(error, (err) => setResponse(err[0]), authData!)
     })
 
     const exec = async  () => {
@@ -269,7 +239,7 @@ const DeliberationPage: FC = () => {
                             try {
                                 await exec()
                             } catch(err) {
-                                handleErr(err, setResponse)
+                                handleError(err, (err) => setResponse(err[0]), authData!)
                             }
                             setLoading(false)
                         }}>Execute</Button>

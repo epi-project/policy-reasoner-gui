@@ -10,29 +10,7 @@ import { AxiosError } from "axios"
 import useConnectorInfo from "../hooks/useConnectorInfo"
 import { Policy, PolicyVersion, SYNTAX } from "../api/types"
 import { Loader } from "../components/Loader"
-
-const handleError = (error: any, setErrors: React.Dispatch<React.SetStateAction<string[]>>) => {
-    if (!error) {
-        return
-    }
-
-    const response = (error as AxiosError).response
-
-    if (!response) {
-        let msg = (error as AxiosError).message
-        setErrors(e => [...e, msg || `${msg}`])
-        return
-    }
-
-    const err = (response.data as any).detail || response.data as string
-
-    if (!err) {
-        setErrors(e => [...e, `Call returned invalid statuscode: ${response.status} (${response.statusText})`])
-        return
-    }
-
-    setErrors(e => [...e, err])
-}
+import { handleError } from "../errors/util"
 
 const PoliciesPage: FC = () => {
     const authData = useContext(AuthContext)
@@ -57,8 +35,9 @@ const PoliciesPage: FC = () => {
     })
 
     useEffect(() => {
-        handleError(policyError, setErrors)
-    }, [policyError])
+        error && handleError(error, setErrors, authData!)
+        policyError && handleError(policyError, setErrors, authData!)
+    }, [error, policyError])
 
     const {data: activeVersion} = useQuery({
         queryKey: ['policies', 'active'],
@@ -71,7 +50,7 @@ const PoliciesPage: FC = () => {
             // Invalidate and refetch
             client.invalidateQueries({ queryKey: ['policies', 'active'] })
         },
-        onError: (error) => handleError(error, setErrors)
+        onError: (error) => handleError(error, setErrors, authData!)
     })
 
     const deactivateMutation = useMutation({
@@ -80,7 +59,7 @@ const PoliciesPage: FC = () => {
             // Invalidate and refetch
             client.invalidateQueries({ queryKey: ['policies', 'active'] })
         },
-        onError: (error) => handleError(error, setErrors)
+        onError: (error) => handleError(error, setErrors, authData!)
     })
 
     const addPolicyMutation = useMutation({
@@ -92,7 +71,7 @@ const PoliciesPage: FC = () => {
             setEditPolicy(undefined)
             client.invalidateQueries({ queryKey: ['policies'] })
         },
-        onError: (error) => handleError(error, setErrors)
+        onError: (error) => handleError(error, setErrors, authData!)
     })
 
     const staticVersion = (!policy || policy.version > 0) && selected !== NEW_VERSION
@@ -119,9 +98,10 @@ const PoliciesPage: FC = () => {
     }, [policies])
 
     useEffect(() => {
-        if (!authData?.authenticated(API.POLICY) || !error) {
+        if (authData!?.authenticated(API.POLICY) || !error) {
             return
         }
+
         client.invalidateQueries({ queryKey: ['policies'] })
         client.invalidateQueries({ queryKey: ['policies', 'active'] })
     }, [authData?.authenticated(API.POLICY), error])
@@ -143,7 +123,7 @@ const PoliciesPage: FC = () => {
     return (
         <>
         <div>
-            {isLoading ? <Loader/> : null}
+            {!errors.length && isLoading ? <Loader/> : null}
             <h1>Policy API</h1>
             <div style={{display: 'flex', justifyContent: 'space-between'}}>
                 
