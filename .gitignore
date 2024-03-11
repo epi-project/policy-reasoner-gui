@@ -5,3 +5,4 @@ todo
 bin/eflint-to-json
 .DS_Store
 .parcel-cache
+clientbuild

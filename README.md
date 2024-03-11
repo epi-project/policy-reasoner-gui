@@ -21,39 +21,32 @@ $ docker compose up -d
 If the Policy Reasoner is running on an address different from `http://localhost:3030`, provide the reasoner's address with the `CHECKER_ADDR` environment variable.
 
 ```bash
-$ CHECKER_ADDR=http://the-reasoners-address docker compose up -d
+$ CHECKER_ADDR="http://the-reasoners-address:1234" docker compose up -d
 ```
 
 The application should now be accessible at [http://localhost:3001](http://localhost:3001).
 
 ### Manual Setup
 
-#### Building the Web Application
-
-To manually build the web application, navigate to the `client` folder within the repository and execute the following commands. Ensure you have NodeJS and NPM installed, which can be downloaded from [the official NodeJS website](https://nodejs.org/en/download).
-
-```bash
-$ npm i
-$ npx parcel build --dist-dir ../clientbuild src/index.html
-```
-
 #### Building `eflint-to-json`
 
-The application relies on the `eflint-to-json` binary for converting between `eflint` and `eflint-json` formats. This binary is part of the Go `eflint` server implementation, available [here](https://github.com/Olaf-Erkemeij/eflint-server).
+The application relies on the `eflint-to-json` binary for converting between the eFLINT DSL and the eFLINT JSON Specification formats. This binary is part of the Go `eflint-server` implementation, available [here](https://github.com/Olaf-Erkemeij/eflint-server) (although this project uses a fork [here](https://github.com/epi-project/eflint-server-go)).
 
 To compile the `eflint-to-json` application, follow these steps:
 
-1. Clone the repository.
-2. Navigate to the `cmd/eflint-to-json` directory within the cloned repository.
-3. Execute the following commands:
+1. Clone the repository (`git clone https://github.com/epi-project/eflint-server-go`).
+2. Navigate to the `cmd/eflint-to-json` directory within the cloned repository (`cd eflint-server-go/cmd/eflint-to-json`).
+3. Execute the following command:
 
 ```bash
 $ go build -o path/to/policy-reasoner-client-backend-repo/bin/eflint-to-json .
 ```
 
-Replace `path/to/policy-reasoner-client-backend-repo` with the appropriate path to your `policy-reasoner-client-backend-repo` directory.
+Replace `path/to/policy-reasoner-client-backend-repo` with the appropriate path to your `policy-reasoner-client-backend` directory.
 
 #### Starting the Server
+
+Before starting the server, install [npm](https://www.npmjs.com/en/download) on your machine as a dependency to compile the web interface. Actually building it, though, is taken care of by Cargo.
 
 To start the server, execute the following command:
 
@@ -64,7 +57,7 @@ $ cargo run
 If the Policy Reasoner is running on an address different from `http://localhost:3030`, provide the reasoner's address by starting the server with the `--checker-address` option.
 
 ```bash
-$ cargo run --checker-addres http://the-reasoners-address
+$ cargo run --checker-addres "http://the-reasoners-address:1234"
 ```
 
 ## Using the Application

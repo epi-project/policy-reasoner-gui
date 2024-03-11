@@ -34,3 +34,7 @@ eflint-json = { git = "https://gitlab.com/eflint/json-spec-rs", default-features
 enum-debug = { git = "https://github.com/Lut99/enum-debug", features = ["derive"] }
 error-trace = { git = "https://github.com/Lut99/error-trace-rs" }
 humanlog = { git = "https://github.com/Lut99/humanlog-rs" }
+
+
+[build-dependencies]
+error-trace = { git = "https://github.com/Lut99/error-trace-rs" }
